@@ -1,0 +1,65 @@
+services:
+  web:
+    build: .
+    command: gunicorn eventify.wsgi:application --bind 0.0.0.0:8000
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+      - mailhog
+    networks:
+      - eventify-network
+
+  worker:
+    build: .
+    command: celery -A eventify worker --loglevel=info
+    env_file: .env
+    depends_on:
+      - redis
+    networks:
+      - eventify-network
+
+  db:
+    image: postgres:15
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - eventify-network
+
+  redis:
+    image: redis:7
+    env_file: .env
+    networks:
+      - eventify-network
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - eventify-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - web
+    networks:
+      - eventify-network
+
+volumes:
+  postgres_data:
+
+networks:
+  eventify-network:
