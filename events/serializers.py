@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Event, Registration
 
 class EventSerializer(serializers.ModelSerializer):
-    organizer = serializers.ReadOnlyField(source="organizer.username")
+    organizer = serializers.ReadOnlyField(source="organizer.id")
 
     class Meta:
         model = Event
@@ -10,7 +10,7 @@ class EventSerializer(serializers.ModelSerializer):
         read_only_fields = ("organizer", "created_at", "updated_at")
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source="user.username")
+    user = serializers.ReadOnlyField(source="user.id")
     event = serializers.ReadOnlyField(source="event.id")
 
     class Meta:

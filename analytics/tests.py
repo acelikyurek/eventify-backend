@@ -11,7 +11,7 @@ User = get_user_model()
 @pytest.mark.django_db
 class TestEventQueries(GraphQLTestCase):
     GRAPHQL_SCHEMA = schema
-    GRAPHQL_URL = "/graphql/"
+    GRAPHQL_URL = "/graphql"
 
     def setUp(self):
         self.organizer1 = User.objects.create_user(username="org1", password="pass1234")

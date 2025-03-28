@@ -2,17 +2,20 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import generics, permissions
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import ValidationError
 from .models import Event, Registration
 from .serializers import EventSerializer, RegistrationSerializer
 from notifications.tasks import send_email
 
 class IsOrganizer(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return obj.organizer == request.user
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        else:
+            return obj.organizer == request.user
 
 @method_decorator(cache_page(60*5), name="get")
-class EventListCreate(generics.ListCreateAPIView):
+class EventGetAllCreate(generics.ListCreateAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -26,10 +29,11 @@ class EventListCreate(generics.ListCreateAPIView):
             recipient_list=[self.request.user.email],
         )
 
-class EventDetail(generics.RetrieveUpdateDestroyAPIView):
+class EventGetUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOrganizer)
+    lookup_field = "id"
 
 class RegistrationCreate(generics.CreateAPIView):
     serializer_class = RegistrationSerializer
@@ -48,14 +52,13 @@ class RegistrationCreate(generics.CreateAPIView):
         )
 
 class RegistrationDelete(generics.DestroyAPIView):
-    queryset = Registration.objects.all()
+    serializer_class = RegistrationSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    lookup_field = "id"
 
-    def get_object(self):
-        obj = super().get_object()
-        if obj.user != self.request.user:
-            raise PermissionDenied("Cannot delete others' registrations!")
-        return obj
+    def get_queryset(self):
+        event_id = self.kwargs.get("event_id")
+        return Registration.objects.filter(user=self.request.user, event__id=event_id)
 
     def perform_destroy(self, instance):
         event = instance.event
@@ -68,12 +71,9 @@ class RegistrationDelete(generics.DestroyAPIView):
             recipient_list=[user_email],
         )
 
-class UserRegistrationsList(generics.ListAPIView):
+class RegistrationGetAll(generics.ListAPIView):
     serializer_class = RegistrationSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
-        user_id = int(self.kwargs["user_id"])
-        if self.request.user.id != user_id:
-            raise PermissionDenied("Cannot view others' registrations!")
-        return Registration.objects.filter(user__id=user_id)
+        return Registration.objects.filter(user=self.request.user)
