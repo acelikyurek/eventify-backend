@@ -71,8 +71,8 @@ A backend management API built with Python Django framework. Key technologies us
 
 | Method | Endpoint                                    | Description                   |
 | ------ | ------------------------------------------- | ----------------------------- |
-| GET    | `/api/auth/login`                           | Login an existing user        |
-| GET    | `/api/auth/register`                        | Register a new user           |
+| POST   | `/api/auth/login`                           | Login an existing user        |
+| POST   | `/api/auth/register`                        | Register a new user           |
 | GET    | `/api/events`                               | List events (cached)          |
 | POST   | `/api/events`                               | Create event (organizer only) |
 | GET    | `/api/events/{id}`                          | Retrieve event details        |
