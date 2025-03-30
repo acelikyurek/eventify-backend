@@ -69,15 +69,15 @@ A backend management API built with Python Django framework. Key technologies us
 
 ## API Endpoints
 
-| Method | Endpoint                                    | Description                   |
-| ------ | ------------------------------------------- | ----------------------------- |
-| POST   | `/api/auth/login`                           | Login an existing user        |
-| POST   | `/api/auth/register`                        | Register a new user           |
-| GET    | `/api/events`                               | List events (cached)          |
-| POST   | `/api/events`                               | Create event (organizer only) |
-| GET    | `/api/events/{id}`                          | Retrieve event details        |
-| PUT    | `/api/events/{id}`                          | Update event (organizer only) |
-| DELETE | `/api/events/{id}`                          | Delete event (organizer only) |
-| POST   | `/api/events/{event_id}/registrations`      | Register for an event         |
-| DELETE | `/api/events/{event_id}/registrations/{id}` | Cancel registration           |
-| GET    | `/api/registrations`                        | List user's registrations     |
+| Method | Endpoint                               | Description                   |
+| ------ | -------------------------------------- | ----------------------------- |
+| POST   | `/api/auth/login`                      | Login an existing user        |
+| POST   | `/api/auth/register`                   | Register a new user           |
+| GET    | `/api/events`                          | List events (cached)          |
+| POST   | `/api/events`                          | Create event (organizer only) |
+| GET    | `/api/events/{id}`                     | Retrieve event details        |
+| PUT    | `/api/events/{id}`                     | Update event (organizer only) |
+| DELETE | `/api/events/{id}`                     | Delete event (organizer only) |
+| POST   | `/api/events/{event_id}/registrations` | Register for an event         |
+| DELETE | `/api/events/{event_id}/registrations` | Cancel registration           |
+| GET    | `/api/registrations`                   | List user's registrations     |

@@ -6,6 +6,8 @@ from rest_framework.exceptions import ValidationError
 from .models import Event, Registration
 from .serializers import EventSerializer, RegistrationSerializer
 from notifications.tasks import send_email
+from rest_framework import mixins
+from django.http import Http404
 
 class IsOrganizer(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -35,9 +37,19 @@ class EventGetUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOrganizer)
     lookup_field = "id"
 
-class RegistrationCreate(generics.CreateAPIView):
+class RegistrationCreateDelete(generics.GenericAPIView, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     serializer_class = RegistrationSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        event_id = self.kwargs.get("event_id")
+        return Registration.objects.filter(user=self.request.user, event__id=event_id)
+
+    def get_object(self):
+        try:
+            return self.get_queryset().get()
+        except Registration.DoesNotExist:
+            raise Http404
 
     def perform_create(self, serializer):
         event = get_object_or_404(Event, pk=self.kwargs["event_id"])
@@ -51,15 +63,6 @@ class RegistrationCreate(generics.CreateAPIView):
             recipient_list=[self.request.user.email],
         )
 
-class RegistrationDelete(generics.DestroyAPIView):
-    serializer_class = RegistrationSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-    lookup_field = "id"
-
-    def get_queryset(self):
-        event_id = self.kwargs.get("event_id")
-        return Registration.objects.filter(user=self.request.user, event__id=event_id)
-
     def perform_destroy(self, instance):
         event = instance.event
         user_email = instance.user.email
@@ -70,6 +73,12 @@ class RegistrationDelete(generics.DestroyAPIView):
             message=f"Your registration for {event.title} has been cancelled.",
             recipient_list=[user_email],
         )
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 class RegistrationGetAll(generics.ListAPIView):
     serializer_class = RegistrationSerializer

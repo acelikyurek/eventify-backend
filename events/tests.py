@@ -41,7 +41,7 @@ class EventTests(APITestCase):
 
     def test_registration_flow(self):
         event = Event.objects.create(title="E", date="2025-06-01T10:00:00Z", location="Y", organizer=self.organizer)
-        register_url = reverse("events:registration-create", args=[event.id])
+        register_url = reverse("events:registration-create-delete", args=[event.id])
 
         self.client.force_authenticate(user=self.attendee)
 
@@ -52,7 +52,7 @@ class EventTests(APITestCase):
         resp2 = self.client.post(register_url)
         self.assertEqual(resp2.status_code, status.HTTP_400_BAD_REQUEST)
 
-        delete_url = reverse("events:registration-delete", args=[event.id, reg_id])
+        delete_url = reverse("events:registration-create-delete", args=[event.id])
         resp3 = self.client.delete(delete_url)
         self.assertEqual(resp3.status_code, status.HTTP_204_NO_CONTENT)
 

@@ -18,7 +18,6 @@ class TestEventQueries(GraphQLTestCase):
         self.organizer2 = User.objects.create_user(username="org2", password="pass1234")
 
         now = timezone.now()
-        # Past event
         Event.objects.create(
             title="Past Event",
             description="Already happened",
@@ -26,7 +25,6 @@ class TestEventQueries(GraphQLTestCase):
             location="Offline",
             organizer=self.organizer1,
         )
-        # Upcoming events
         Event.objects.create(
             title="Future Event 1",
             description="Coming soon",
@@ -88,7 +86,6 @@ class TestEventQueries(GraphQLTestCase):
         self.assertResponseNoErrors(response)
         assert content["data"]["event"]["title"] == event.title
 
-        # Nonexistent ID returns null
         response = self.query('query { event(id: 9999) { title } }')
         content = response.json()
         assert content["data"]["event"] is None
